@@ -2,6 +2,7 @@ import pandas as pd
 import networkx as nx
 import random
 import matplotlib.pyplot as plt
+from ford_fulkerson import ford_fulkerson
 
 class Network:
     def __init__(self) -> None:
@@ -12,33 +13,28 @@ class Network:
             [0, 10, -10, 0, 10, 0, -10, 0])]
         
         #ford-fulkerson
-        self.max_flow, self.residual_graph_flow = nx.maximum_flow(self.graph, 0, 7)
-        self.min_cost_flow = nx.max_flow_min_cost(self.graph, 0, 7)
-        self.min_cost = nx.cost_of_flow(self.graph, self.min_cost_flow)
-        self.res_graph = self.__gen_res_graph()
+        self.graph_ff = self.graph.copy()
+        self.max_flow = ford_fulkerson(self.graph_ff, 0 , 7)
+        
+        #max flow min cost
+        self.min_cost_flow = nx.max_flow_min_cost(self.graph.copy(), 0, 7)
+        self.min_cost = nx.cost_of_flow(self.graph.copy(), self.min_cost_flow)
         self.min_cost_graph = self.__gen_min_cost_graph()
+        self.flow = sum(nx.get_edge_attributes(self.min_cost_graph, 'flow').values())
     
     def __gen_graph(self):
         G = nx.DiGraph()
         u_edge = [0,0,0,1,1,1,2,2,2,3,3,4,4,5,6,6]
         v_edge = [1,2,3,2,3,4,3,5,6,4,5,5,7,7,5,7]
-        nodes = [(i) for i in range(8)]
 
-        G.add_nodes_from(nodes)
-        G.add_edges_from([
-            (u,v,{'weight': random.randint(1,7), 'capacity': random.randint(1,7), 'flow':0}) 
-            for u,v in zip(u_edge, v_edge)
-            ])
-        return G
+        for node in range(8):
+            G.add_node(node)
 
-    def __gen_res_graph(self):
-        G = self.graph.copy()
-        flow_attr = {}
-        for u_node in self.residual_graph_flow.keys():
-            for v_node in self.residual_graph_flow[u_node]:
-                flow_attr[(u_node, 
-                           v_node)] = self.residual_graph_flow[u_node][v_node]
-        nx.set_edge_attributes(G, flow_attr, "flow")
+        for u, v in zip(u_edge, v_edge):
+            capacity = random.randint(1, 7)
+            weight = random.randint(1, 7)
+            G.add_edge(u, v, capacity=capacity, flow=0, weight=weight)
+
         return G
     
     def __gen_min_cost_graph(self):
