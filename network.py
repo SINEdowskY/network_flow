@@ -3,9 +3,11 @@ import networkx as nx
 import random
 import matplotlib.pyplot as plt
 from ford_fulkerson import ford_fulkerson
+from busacker_gowen import min_cost_max_flow
 
 class Network:
     def __init__(self) -> None:
+        
         #basic graph
         self.graph = self.__gen_graph()
         self.pos = [(x,y) for x,y in zip(
@@ -17,10 +19,8 @@ class Network:
         self.max_flow = ford_fulkerson(self.graph_ff, 0 , 7)
         
         #max flow min cost
-        self.min_cost_flow = nx.max_flow_min_cost(self.graph.copy(), 0, 7)
-        self.min_cost = nx.cost_of_flow(self.graph.copy(), self.min_cost_flow)
-        self.min_cost_graph = self.__gen_min_cost_graph()
-        self.flow = sum(nx.get_edge_attributes(self.min_cost_graph, 'flow').values())
+        self.graph_bg = self.graph.copy()
+        self.flow_bg, self.cost_bg = min_cost_max_flow(self.graph_bg, 0, 7)
     
     def __gen_graph(self):
         G = nx.DiGraph()
@@ -32,28 +32,17 @@ class Network:
 
         for u, v in zip(u_edge, v_edge):
             capacity = random.randint(1, 7)
-            weight = random.randint(1, 7)
+            weight = random.randint(1, 4)
             G.add_edge(u, v, capacity=capacity, flow=0, weight=weight)
 
         return G
-    
-    def __gen_min_cost_graph(self):
-        G = self.graph.copy()
-        flow_attr = {}
-        for u_node in self.min_cost_flow.keys():
-            for v_node in self.min_cost_flow[u_node]:
-                flow_attr[(u_node, 
-                           v_node)] = self.min_cost_flow[u_node][v_node]
-        nx.set_edge_attributes(G, flow_attr, "flow")
-        return G
 
-    def draw_graph(self, G):
+    def draw_graph(self, G, draw_weights=False):
         '''
         Function for drawing graph
         '''
         caps: dict = nx.get_edge_attributes(G, 'capacity')
         flows: dict = nx.get_edge_attributes(G, 'flow')
-        weights: dict = nx.get_edge_attributes(G, 'weight')
         label: dict = {key: (flow,cap)
                         for cap, flow, key 
                         in zip(caps.values(), flows.values(), caps.keys())}
@@ -64,7 +53,9 @@ class Network:
         nx.drawing.draw_networkx_edge_labels(
             G, pos=self.pos, edge_labels=label, label_pos = 0.4
         )
-        nx.drawing.draw_networkx_edge_labels(
-            G, pos=self.pos, edge_labels=weights, label_pos = 0.75, font_color="green"
-        )
+        if not draw_weights:
+            weights: dict = nx.get_edge_attributes(G, 'weight')
+            nx.drawing.draw_networkx_edge_labels(
+                G, pos=self.pos, edge_labels=weights, label_pos = 0.75, font_color="green"
+            )
     

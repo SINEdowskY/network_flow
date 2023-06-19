@@ -1,6 +1,5 @@
 import streamlit as st
 import matplotlib.pyplot as plt
-from streamlit_card import card
 from network import Network
 import networkx as nx
 
@@ -65,28 +64,29 @@ if gen:
     st.header("Ford-Fulkerson")
     col1, col2= st.columns(2)
     with col1:
-        st.header("Sieć przepływowa")
-        st.pyplot(fig=net.draw_graph(net.graph))
+        st.header("Przed:")
+        st.pyplot(fig=net.draw_graph(net.graph, draw_weights=True))
     with col2:
-        st.pyplot(fig=net.draw_graph(net.graph_ff))
-    st.header(f"suma przepływu: {net.max_flow}")
+        st.header("Po:")
+        st.pyplot(fig=net.draw_graph(net.graph_ff, draw_weights=True))
+        st.text(f"Maksymalny przepływ: {net.max_flow}")
     
     st.header("Busacker-Gowen")
     col1, col2= st.columns(2)
     with col1:
-        st.header("Sieć przepływowa")
+        st.header("Przed:")
         st.pyplot(fig=net.draw_graph(net.graph))
     with col2:
-        st.header("Maksymalny przepływ")
-        st.pyplot(fig=net.draw_graph(net.min_cost_graph))
-        st.text(f"Minimalny koszt: {net.min_cost}")
-        st.text(f"Maksymalny przepływ: {net.flow}")
+        st.header("Po:")
+        st.pyplot(fig=net.draw_graph(net.graph_bg))
+        st.text(f"Minimalny koszt: {net.cost_bg}")
+        st.text(f"Maksymalny przepływ: {net.flow_bg}")
     
     st.header("Porównanie")
     col1, col2= st.columns(2)
     with col1:
         st.header("Ford Fulkerson")
-        st.pyplot(fig=net.draw_graph(net.graph_ff))
+        st.pyplot(fig=net.draw_graph(net.graph_ff, draw_weights=True))
     with col2:
-        st.header("Maksymalny przepływ")
-        st.pyplot(fig=net.draw_graph(net.min_cost_graph))
+        st.header("Busacker Gowen")
+        st.pyplot(fig=net.draw_graph(net.graph_bg))
